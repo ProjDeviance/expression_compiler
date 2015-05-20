@@ -17,21 +17,23 @@ Analyzer
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-lg-12" >
-        
-    @if(Session::get('msgsuccess'))
-      <div class="alert alert-success fade in" role="alert">
-        <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-        <center>{{ Session::get('msgsuccess') }}</center>
-      </div>
-      {{ Session::forget('msgsuccess') }}
-    @endif
     @if(Session::get('msgfail'))
       <div class="alert alert-danger fade in" role="alert">
         <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
         <center>{{ Session::get('msgfail') }}</center>
       </div>
       {{ Session::forget('msgfail') }}
+      {{ Session::forget('elements') }}
+      {{ Session::forget('labels') }}
+      {{ Session::forget('msgsuccess') }}
+    @elseif(Session::get('msgsuccess'))
+      <div class="alert alert-success fade in" role="alert">
+        <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+        <center>{{ Session::get('msgsuccess') }}</center>
+      </div>
+      {{ Session::forget('msgsuccess') }}
     @endif
+
 
         {{ Form::open(array('class' => 'form-signin', 'role' => 'form', )) }}
 

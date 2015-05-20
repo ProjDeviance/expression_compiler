@@ -10,13 +10,25 @@ class EAController extends BaseController {
 
     $expression = Input::get("expression");
 
+
+    // Filtering Process
+
+    //Removes tag inputs
     $expression=strip_tags($expression);
 
+    //Removes whitespaces
     $expression=preg_replace('/\s+/', '', $expression);
 
+    // Segments string input into character array
     $elements = str_split ( $expression, 1 );
 
+    //End - Filtering Process
+
   
+   
+
+    // Lexical Analysis
+
     $lastKey = sizeof($elements)-1;
 
     $refinedElements = array();
@@ -24,7 +36,10 @@ class EAController extends BaseController {
     $labelElements = array();
 
     $temp = "";
-    foreach ($elements as $key => $element) {
+
+
+    foreach ($elements as $key => $element) 
+    {
       $temp .= $element;
 
       if($key==0){
@@ -35,20 +50,39 @@ class EAController extends BaseController {
             $labelElements[] = "operand";
             $temp = "";
 
+            if($lastKey==0)
+            {
+              break;
+            }
+
+            //Adds missing multiplication symbol
             if($elements[$key+1]=="("||ctype_alpha($elements[$key+1])||ctype_digit($elements[$key+1]))
             {
               $refinedElements[] = "*";
               $labelElements[] = "operator";
               $temp = "";
             }
+
+           
+
         }
         else if(ctype_digit(str_replace(str_split(' ,s.'),'',$temp)))
         {
+           if($lastKey==0)
+            {
+              $refinedElements[] = $temp;
+              $labelElements[] = "operand";
+              $temp = "";
+              break;
+            }
+          //Combines digits to form an integer or decimal element
           if(!ctype_digit(str_replace(str_split(' ,s.'),'',$temp.$elements[$key+1])))
           {
             $refinedElements[] = $temp;
             $labelElements[] = "operand";
             $temp = "";
+
+            //Adds missing multiplication symbol
             if($elements[$key+1]=="("||ctype_alpha($elements[$key+1]))
             {
               $refinedElements[] = "*";
@@ -143,11 +177,13 @@ class EAController extends BaseController {
         }
         else if(ctype_digit(str_replace(str_split(' ,s.'),'',$temp)))
         {
+          //Combines digits to form a decimal or integer element
           if(!ctype_digit(str_replace(str_split(' ,s.'),'',$temp.$elements[$key+1]))||$elements[$key+1]==NULL)
           {
             $refinedElements[] = $temp;
             $labelElements[] = "operand";
             $temp = "";
+            //Adds missing multiplication symbol
             if($elements[$key+1]=="("||ctype_alpha($elements[$key+1])||$elements[$key-1]==")")
             {
               $refinedElements[] = "*";
@@ -168,6 +204,7 @@ class EAController extends BaseController {
             $labelElements[] = "close";
             $temp = "";
 
+            //Adds missing multiplication symbol
             if($elements[$key+1]=="("||ctype_alpha($elements[$key+1]))
             {
               $refinedElements[] = "*";
@@ -191,9 +228,12 @@ class EAController extends BaseController {
 
     }
 
+    //End - Lexical Analysis
+
     $output = "<br>";
 
-    foreach ($elements as $key => $element) {
+    foreach ($elements as $key => $element) 
+    {
       $output .= $element;
     }
 
@@ -209,14 +249,10 @@ class EAController extends BaseController {
 
   public function one_parser()
   {
-
-
-    $lastKey = sizeof(Session::get("elements"))-1;
-
-    if($lastKey!=-1)
-    {
+    
+  
       $this->parser(Session::get('elements'), Session::get('labels'));
-    }
+    
 
     return Redirect::back();
   }
@@ -224,15 +260,26 @@ class EAController extends BaseController {
 
   public function complete_parser()
   {
+    ini_set('max_execution_time', 300);
     $lastKey = sizeof(Session::get("elements"))-1;
 
-    while($lastKey!=-1)
+    while($lastKey!=0)
     {
+      if(Session::get('msgfail'))
+      {
+        
+        Session::forget('elements');
+        Session::forget('labels');
+        return Redirect::back();
+      }
+  
       $lastKey = sizeof(Session::get("elements"))-1;
       $elements = Session::get("elements");
       $labels = Session::get("labels");
       $this->parser($elements, $labels);
     }
+    $this->parser($elements, $labels);
+
     return Redirect::back();
   }
 
@@ -243,6 +290,9 @@ class EAController extends BaseController {
 
     $operatorKey = NULL;
 
+
+
+    //Looks for the first operator from the left
     foreach ($labels as $key => $label) 
     {
       if($label=="operator"){
@@ -251,8 +301,92 @@ class EAController extends BaseController {
       }
     }
 
-    if($labels[0]=="open")
+    $lastKey = sizeof(Session::get("elements"))-1;
+
+
+    if($lastKey==0)
     {
+      //Single Element Handler Function
+      if($labels[0]=="operand")
+      {
+        $output .= "<font color='green'><b>".$elements[0]."</b></font><br>";
+
+        Session::put("output", $output);
+        Session::put("msgsuccess", "The input was a valid expression.");
+      }
+      else
+      {
+        $output .= "<font color='red'><b>".$elements[0]."</b></font><br>";
+
+        Session::put("output", $output);
+        Session::put("msgfail", "The input is not a valid expression.");
+      }
+      //End - Single Element Handler Function
+    }
+
+    else if($lastKey==2)
+    {
+      //Final Expression Handler
+      if($labels[0]=="operand"&&$labels[1]=="operator"&&$labels[2]=="operand")
+      {
+        $output .= "<font color='green'><b>".$elements[2]."</b></font><br>";
+        $elementsArray = array();
+        $labelsArray = array();
+        $elementsArray[] = $elements[2];
+        $labelsArray[] = $labels[2];
+        
+        Session::put("elements", $elementsArray);
+        Session::put("labels", $labelsArray);
+        Session::put("output", $output);
+        Session::put("msgsuccess", "The input was a valid expression.");
+      }
+      else if($labels[0]=="open"&&$labels[1]=="operand"&&$labels[2]=="close")
+      {
+        $elementsArray = array();
+        $labelsArray = array();
+        $elementsArray[] = $elements[1];
+        $labelsArray[] = $labels[1];
+
+        $output .= "<font color='green'><b>".$elements[1]."</b></font><br>";
+
+        Session::put("elements", $elementsArray);
+        Session::put("labels", $labelsArray);
+        Session::put("output", $output);
+        Session::put("msgsuccess", "The input was a valid expression.");
+      }
+      else
+      {
+        $output .= "<font color='red'><b>".$elements[2]."</b></font><br>";
+        Session::put("output", $output);
+        Session::put("msgfail", "The input is not a valid expression.");
+      }
+      //End - Final Expression Handler
+    }
+
+
+    else if($operatorKey==NULL)
+    {
+      return Session::get('elements');
+        $stringElement = "";
+
+        foreach ($elements as $key => $element) 
+        {
+          $stringElement .= $element;
+         
+        }
+       
+       
+        $output .= "<font color='green'><b>".$stringElement."</b></font> <br>";
+        
+      Session::put("msgsuccess", "Successfull complete parsing.");
+    }
+
+
+     
+
+    else if($labels[0]=="open")
+    {
+      //Parenthesis Handler
 
       $checkCloseKey = NULL;
       
@@ -284,14 +418,10 @@ class EAController extends BaseController {
         {
           $newLabels[] = $label; 
         }
-
-      
-
        
-          $output .= "<font color='green'><b>".$stringElement."</b></font> <br>";
+        $output .= "<font color='green'><b>".$stringElement."</b></font> <br>";
         
         Session::put("output", $output);
-
         Session::put("elements", $newElements);
         Session::put("labels", $newLabels);
         Session::put("msgsuccess", "Successfull parsing.");
@@ -309,8 +439,13 @@ class EAController extends BaseController {
 
         Session::put("msgfail", "Invalid parenthesis placement.");
       }
+
+      //End - Parenthesis Handles Function
     }
-    else{
+    else
+    {
+
+    //Operand Operator Operand Handler Function
 
     $leftExpressionArray = array();
     $leftExpression = "";
@@ -347,6 +482,7 @@ class EAController extends BaseController {
     }
 
 
+
     if($labels[0]=="operand"&&$operatorKey!=NULL)
     {
 
@@ -379,8 +515,9 @@ class EAController extends BaseController {
       }
     }
     
-
+    //End - Operand Operator Operand Handler Function
   }
+
   }
    
  
