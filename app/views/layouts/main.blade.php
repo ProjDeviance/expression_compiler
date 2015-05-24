@@ -63,7 +63,6 @@
               <!-- sidebar menu start-->
               <ul class="sidebar-menu" id="nav-accordion">
               
-                  <p class="centered"><a href="/">{{HTML::image('assets/img/ui-sam.jpg', 'logo', array('class'=>'img-circle', 'width'=>'60'))}}</a></p>
                   <h5 class="centered">Expression Analyzer</h5>
                   <br>
                 
@@ -75,20 +74,7 @@
                       </a>
                    
                   </li>
-                   <li class="sub-menu">
-                      <a href="/concept" @if(Session::get('concept')==1) {{Session::forget('concept')}} class= "active" @endif >
-                          <i class="fa fa-book"></i>
-                          <span>Concept</span>
-                      </a>
-            
-                    </li>
-                  <li class="sub-menu">
-                      <a href="/coding" @if(Session::get('coding')==1) {{Session::forget('coding')}} class= "active" @endif >
-                          <i class="fa fa-cogs"></i>
-                          <span>Coding</span>
-                      </a>
-                     
-                  </li>
+                 
                
               </ul>
               <!-- sidebar menu end-->

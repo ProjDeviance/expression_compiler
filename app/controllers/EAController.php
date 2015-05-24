@@ -276,6 +276,8 @@ class EAController extends BaseController {
       $lastKey = sizeof(Session::get("elements"))-1;
       $elements = Session::get("elements");
       $labels = Session::get("labels");
+
+      //
       $this->parser($elements, $labels);
     }
     $this->parser($elements, $labels);
@@ -290,8 +292,6 @@ class EAController extends BaseController {
 
     $operatorKey = NULL;
 
-
-
     //Looks for the first operator from the left
     foreach ($labels as $key => $label) 
     {
@@ -303,12 +303,21 @@ class EAController extends BaseController {
 
     $lastKey = sizeof(Session::get("elements"))-1;
 
-
-    if($lastKey==0)
+    if($lastKey==1)
     {
-      //Single Element Handler Function
+        $output .= "<font color='red'><b>".$elements[1]."</b></font><br>";
+
+        Session::put("output", $output);
+        Session::put("msgfail", "The input was a valid expression.");
+    }
+      
+    elseif($lastKey==0)
+    {
+      //Single Element Instance
+      
       if($labels[0]=="operand")
       {
+        //Operand Only Handler
         $output .= "<font color='green'><b>".$elements[0]."</b></font><br>";
 
         Session::put("output", $output);
@@ -321,14 +330,18 @@ class EAController extends BaseController {
         Session::put("output", $output);
         Session::put("msgfail", "The input is not a valid expression.");
       }
-      //End - Single Element Handler Function
+
+      //End - Single Element Instance
     }
 
     else if($lastKey==2)
     {
-      //Final Expression Handler
+      //Single Expression Instance
+
+
       if($labels[0]=="operand"&&$labels[1]=="operator"&&$labels[2]=="operand")
       {
+        //Operand Operator Operand Handler
         $output .= "<font color='green'><b>".$elements[2]."</b></font><br>";
         $elementsArray = array();
         $labelsArray = array();
@@ -342,6 +355,7 @@ class EAController extends BaseController {
       }
       else if($labels[0]=="open"&&$labels[1]=="operand"&&$labels[2]=="close")
       {
+        //Parenthesis Handler
         $elementsArray = array();
         $labelsArray = array();
         $elementsArray[] = $elements[1];
@@ -356,46 +370,59 @@ class EAController extends BaseController {
       }
       else
       {
+        //Invalid Handler
         $output .= "<font color='red'><b>".$elements[2]."</b></font><br>";
         Session::put("output", $output);
         Session::put("msgfail", "The input is not a valid expression.");
       }
-      //End - Final Expression Handler
+
+      //End - Single Expression Instance
     }
-
-
     else if($operatorKey==NULL)
     {
-      return Session::get('elements');
-        $stringElement = "";
+      //Completed Parsing Instance
 
-        foreach ($elements as $key => $element) 
-        {
-          $stringElement .= $element;
+      return Session::get('elements');
+      $stringElement = "";
+
+      foreach ($elements as $key => $element) 
+      {
+        $stringElement .= $element;
          
-        }
+      }
        
-       
-        $output .= "<font color='green'><b>".$stringElement."</b></font> <br>";
-        
+      $output .= "<font color='green'><b>".$stringElement."</b></font> <br>";
       Session::put("msgsuccess", "Successfull complete parsing.");
+
+      //End - Completed Parsing Instance
     }
 
-
-     
+    // Multiple Expressions Instance
 
     else if($labels[0]=="open")
     {
       //Parenthesis Handler
 
       $checkCloseKey = NULL;
-      
+      $openCounter = 0;
+
       foreach ($labels as $key => $label) 
       {
-        if($label=="close")
-        {
-          $checkCloseKey = $key;
-          break;
+         if($label=="open"&&$key!=0)
+         {
+          $openCounter+=1;
+         }  
+         elseif($label=="close")
+          {
+          if($openCounter==0)
+          {
+            $checkCloseKey = $key;
+            break;
+          }
+          elseif($openCounter!=0)
+          {
+            $openCounter-=1;
+          }
         }
       }
 
@@ -440,12 +467,14 @@ class EAController extends BaseController {
         Session::put("msgfail", "Invalid parenthesis placement.");
       }
 
-      //End - Parenthesis Handles Function
+      //End - Parenthesis Handler
     }
+    
+
     else
     {
 
-    //Operand Operator Operand Handler Function
+    //Operand Operator Operand Handler 
 
     $leftExpressionArray = array();
     $leftExpression = "";
@@ -481,12 +510,8 @@ class EAController extends BaseController {
       }
     }
 
-
-
     if($labels[0]=="operand"&&$operatorKey!=NULL)
     {
-
-
       if($labels[$operatorKey-1]=="operand")
       {
         $output .= "<font color='green'><b>".$leftExpression."</b></font> "."<font color='green'>".$elements[$operatorKey]."</font> <font color='green'>".$rightExpression."</font><br>";
@@ -507,16 +532,18 @@ class EAController extends BaseController {
     
     else
     {
-      if($operatorKey!=NULL){
-      $output .= "<font color='red'><b>".$leftExpression."</b></font> "."<font color='green'>".$elements[$operatorKey]."</font> <font color='green'>".$rightExpression."</font><br>";
+      if($operatorKey!=NULL)
+      {
+        $output .= "<font color='red'><b>".$leftExpression."</b></font> "."<font color='green'>".$elements[$operatorKey]."</font> <font color='green'>".$rightExpression."</font><br>";
         Session::put("output", $output);
-
-     Session::put("msgfail", "An expression must start and end with an operand."); 
+        Session::put("msgfail", "An expression must start and end with an operand."); 
       }
+
     }
     
-    //End - Operand Operator Operand Handler Function
+    //End - Operand Operator Operand Handler 
   }
+  // End - Multiple Expressions Instance
 
   }
    
