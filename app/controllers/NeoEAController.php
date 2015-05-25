@@ -23,9 +23,6 @@ class NeoEAController extends BaseController {
 
     //End - Filtering Process
 
-  
-   
-
     // Lexical Analysis
 
     $lastKey = sizeof($elements)-1;
@@ -35,7 +32,6 @@ class NeoEAController extends BaseController {
     $labelElements = array();
 
     $temp = "";
-
 
     foreach ($elements as $key => $element) 
     {
@@ -61,9 +57,6 @@ class NeoEAController extends BaseController {
               $labelElements[] = "*";
               $temp = "";
             }
-
-           
-
         }
         else if(ctype_digit(str_replace(str_split(' ,s.'),'',$temp)))
         {
@@ -101,8 +94,6 @@ class NeoEAController extends BaseController {
             $refinedElements[] = $temp;
             $labelElements[] = "close";
             $temp = "";
-
-           
         }
         else if($temp=="+"||$temp=="-"||$temp=="/"||$temp=="*"||$temp=="^")
         {
@@ -236,33 +227,22 @@ class NeoEAController extends BaseController {
       $output .= $element;
     }
 
-        Session::put("output", $output."<br>");
-
+    Session::put("output", $output."<br>");
     $this->evaluate($refinedElements, $labelElements);
-
     return Redirect::back();
-  
-    
   }
 
   public function evaluate($elements = array(), $tokens = array())
   {
     Session::put("next", 0);
     Session::put("tokens", $tokens);
-
-
    
-      $check = $this->E(Session::get("tokens"));
+    $check = $this->E(Session::get("tokens"));
 
-      if($check==true)
-        Session::put("msgsuccess", "The input is an valid expression.");
-      else
-        Session::put("msgfail", "The input is an invalid expression.");
-
-    
-
-
-   
+    if($check==true)
+      Session::put("msgsuccess", "The input is an valid expression.");
+    else
+      Session::put("msgfail", "The input is an invalid expression.");
   }
 
 
@@ -328,10 +308,10 @@ class NeoEAController extends BaseController {
     return $this->T($save) &&$this->term("^") && $this->term("operand");
   }
  
-  public function E($tokens = array())
+  public function E($tokens)
   {
 
-
+    $tokens = Session::get("tokens");
     Session::put("tokens", $tokens);
 
     $save = Session::get("next");
@@ -363,8 +343,6 @@ class NeoEAController extends BaseController {
     Session::put("next", $save);
     $tokens = Session::get("tokens");
 
-    
-    
     return $this->term("open") && $this->E($tokens) && $this->term("close");
     
   }
@@ -390,7 +368,6 @@ class NeoEAController extends BaseController {
   }
   public function T($save)
   {
-    
     return ($this->T1($save))||($this->T2($save))||( $this->T4($save))||( $this->T5($save))||( $this->T6($save))||( $this->T7($save))||( $this->T3($save));
   }
 
