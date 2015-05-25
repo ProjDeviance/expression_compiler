@@ -238,8 +238,9 @@ class NeoEAController extends BaseController {
 
         Session::put("output", $output."<br>");
 
-    dd($this->evaluate($refinedElements, $labelElements));
+    $this->evaluate($refinedElements, $labelElements);
 
+    return Redirect::back();
   
     
   }
@@ -249,7 +250,18 @@ class NeoEAController extends BaseController {
     Session::put("next", 0);
     Session::put("tokens", $tokens);
 
-    return $this->E();
+
+   
+      $check = $this->E(Session::get("tokens"));
+
+      if($check==true)
+        Session::put("msgsuccess", "The input is an valid expression.");
+      else
+        Session::put("msgfail", "The input is an invalid expression.");
+
+    
+
+
    
   }
 
@@ -261,12 +273,12 @@ class NeoEAController extends BaseController {
       $next = Session::get("next");
 
       $lastKey = sizeof($tokens)-1;
-
-
-      if($next>$lastKey){
+      
+      if($next>$lastKey)
+      {
         return false;
       }
-      if($tok==$tokens[$next])
+      else if($tok==$tokens[$next])
       {
         $next = $next+1;
         Session::put("next", $next);
@@ -283,23 +295,62 @@ class NeoEAController extends BaseController {
   public function E1($save)
   {
     Session::put("next", $save);
-    return $this->T();
+    return $this->T($save);
   }
   public function E2($save)
   {
     Session::put("next", $save);
-    return $this->T() &&$this->term("+") && $this->term("operand");
+    return $this->T($save) &&$this->term("+") && $this->term("operand");
   }
-  public function E()
+  public function E3($save)
   {
+    Session::put("next", $save);
+    return $this->T($save) &&$this->term("*") && $this->term("operand");
+  }
+  public function E4($save)
+  {
+    Session::put("next", $save);
+    return $this->T($save) &&$this->term("/") && $this->term("operand");
+  }
+  public function E5($save)
+  {
+    Session::put("next", $save);
+    return $this->T($save) &&$this->term("-") && $this->term("operand");
+  }
+  public function E6($save)
+  {
+    Session::put("next", $save);
+    return $this->T($save) &&$this->term("-") && $this->term("operand");
+  }
+  public function E7($save)
+  {
+    Session::put("next", $save);
+    return $this->T($save) &&$this->term("^") && $this->term("operand");
+  }
+ 
+  public function E($tokens = array())
+  {
+
+
+    Session::put("tokens", $tokens);
+
     $save = Session::get("next");
-    return ($this->E1($save))||($this->E2($save));
+    
+    $lastKey = sizeof($tokens)-1;
+
+    if($lastKey==0)
+      return $this->E1($save);
+    elseif($tokens[$save]=="open")
+      return ($this->E1($save));
+ 
+    else
+      return ($this->E7($save))||($this->E6($save))||($this->E5($save))||($this->E4($save))||($this->E3($save))||($this->E2($save));
   }
 
   public function T1($save)
   {
     Session::put("next", $save);
-    return $this->term("*")&&$this->T();
+    return $this->term("*")&&$this->T($save);
   }
   public function T2($save)
   {
@@ -308,13 +359,39 @@ class NeoEAController extends BaseController {
   }
   public function T3($save)
   {
+ 
     Session::put("next", $save);
-    return $this->term("open")&&$this->E()&&$this->term("close");
+    $tokens = Session::get("tokens");
+
+    
+    
+    return $this->term("open") && $this->E($tokens) && $this->term("close");
+    
   }
-  public function T()
+  public function T4($save)
   {
-    $save = Session::get("next");
-    return ($this->T1($save))||($this->T2($save))||( $this->T3($save));
+    Session::put("next", $save);
+    return $this->term("/")&&$this->T($save);
+  }
+  public function T5($save)
+  {
+    Session::put("next", $save);
+    return $this->term("-")&&$this->T($save);
+  }
+  public function T6($save)
+  {
+    Session::put("next", $save);
+    return $this->term("+")&&$this->T($save);
+  }
+  public function T7($save)
+  {
+    Session::put("next", $save);
+    return $this->term("^")&&$this->T($save);
+  }
+  public function T($save)
+  {
+    
+    return ($this->T1($save))||($this->T2($save))||( $this->T4($save))||( $this->T5($save))||( $this->T6($save))||( $this->T7($save))||( $this->T3($save));
   }
 
 

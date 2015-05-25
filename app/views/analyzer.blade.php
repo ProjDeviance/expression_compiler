@@ -58,37 +58,7 @@ Analyzer
                 </div>
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading" align='center'>
-                    Output
-                </div>
-                <div class="panel-body">
-                    <div class="row">
-                        <div class="col-lg-12" >
         
-        <p>
-            @if(Session::get("output"))
-                {{Session::get("output")}}
-            @endif
-        
-        </p>
-       
-        <div class="col-lg-12" align="center">
-            <a href="/parse" class="btn btn-success left-sbs sbmt"> Parse Step </a>
-            <br>
-            <br>
-            <a href="/completeparse" class="btn btn-success left-sbs sbmt"> Complete Parse </a>
-        </div>
-       
-        
-        
-     
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
 
