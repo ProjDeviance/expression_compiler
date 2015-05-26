@@ -297,12 +297,8 @@ class NeoEAController extends BaseController {
     Session::put("next", $save);
     return $this->T($save) &&$this->term("-") && $this->term("operand");
   }
+
   public function E6($save)
-  {
-    Session::put("next", $save);
-    return $this->T($save) &&$this->term("-") && $this->term("operand");
-  }
-  public function E7($save)
   {
     Session::put("next", $save);
     return $this->T($save) &&$this->term("^") && $this->term("operand");
@@ -324,7 +320,7 @@ class NeoEAController extends BaseController {
       return ($this->E1($save));
  
     else
-      return ($this->E7($save))||($this->E6($save))||($this->E5($save))||($this->E4($save))||($this->E3($save))||($this->E2($save));
+      return ($this->E6($save))||($this->E5($save))||($this->E4($save))||($this->E3($save))||($this->E2($save));
   }
 
   public function T1($save)
